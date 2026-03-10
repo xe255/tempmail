@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const API_BASE_URL = "https://api.notletters.com/v1";
-const MAILBOX_FILE = path.join(__dirname, "emailpass.txt");
+const MAILBOX_FILE = path.join(process.cwd(), "emailpass.txt");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = path.join(__dirname, "data");
 const LABELS_FILE = path.join(DATA_DIR, "labels.json");
