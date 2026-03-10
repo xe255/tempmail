@@ -338,24 +338,8 @@ async function readMailboxesFile() {
     });
 }
 
-async function readMailboxes() {
-  // In serverless / Netlify: read from MAILBOXES env var (one email:password per line)
-  if (process.env.MAILBOXES) {
-    return process.env.MAILBOXES
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line, index) => {
-        const sep = line.indexOf(":");
-        if (sep === -1) throw new Error(`Invalid mailbox line ${index + 1}. Expected email:password.`);
-        return { index, email: line.slice(0, sep).trim(), password: line.slice(sep + 1).trim() };
-      });
-  }
-  return readMailboxesFile();
-}
-
 async function loadMailboxes() {
-  const mailboxes = await readMailboxes();
+  const mailboxes = await readMailboxesFile();
   const mailboxMap = new Map(mailboxes.map((mailbox) => [mailbox.email, mailbox]));
   const nextCache = new Map();
 
