@@ -338,8 +338,24 @@ async function readMailboxesFile() {
     });
 }
 
+async function readMailboxes() {
+  // In serverless / Netlify: read from MAILBOXES env var (one email:password per line)
+  if (process.env.MAILBOXES) {
+    return process.env.MAILBOXES
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line, index) => {
+        const sep = line.indexOf(":");
+        if (sep === -1) throw new Error(`Invalid mailbox line ${index + 1}. Expected email:password.`);
+        return { index, email: line.slice(0, sep).trim(), password: line.slice(sep + 1).trim() };
+      });
+  }
+  return readMailboxesFile();
+}
+
 async function loadMailboxes() {
-  const mailboxes = await readMailboxesFile();
+  const mailboxes = await readMailboxes();
   const mailboxMap = new Map(mailboxes.map((mailbox) => [mailbox.email, mailbox]));
   const nextCache = new Map();
 
@@ -770,43 +786,50 @@ app.post("/admin/api/scan", requireAdmin, (_req, res) => {
   res.json({ started: true, summary: state.summary });
 });
 
-// ─── File watcher ─────────────────────────────────────────────────────────────
+// ─── Export app for serverless (Netlify Functions) ────────────────────────────
 
-fs.watchFile(MAILBOX_FILE, { interval: 3000 }, async (current, previous) => {
-  if (current.mtimeMs === previous.mtimeMs) return;
-  try {
-    await loadMailboxes();
-    queueSummaryScan();
-  } catch (error) {
-    state.summary.lastError = `Mailbox reload failed: ${error.message}`;
-  }
-});
+module.exports = app;
 
-// ─── Boot ─────────────────────────────────────────────────────────────────────
+// ─── Local dev: file watcher + server startup ─────────────────────────────────
 
-async function start() {
-  await loadData();
-  await loadMailboxes();
-  await fetchMe();
-  queueSummaryScan();
-
-  summaryTimer = setInterval(() => { queueSummaryScan(); }, SUMMARY_SCAN_INTERVAL_MS);
-  setInterval(() => { saveData().catch(() => {}); }, DATA_SAVE_INTERVAL_MS);
-
-  app.listen(PORT, () => {
-    console.log(`DarkoMail is live at http://localhost:${PORT}`);
-    console.log(`Admin panel: http://localhost:${PORT}/admin.html`);
+if (!process.env.NETLIFY) {
+  fs.watchFile(MAILBOX_FILE, { interval: 3000 }, async (current, previous) => {
+    if (current.mtimeMs === previous.mtimeMs) return;
+    try {
+      await loadMailboxes();
+      queueSummaryScan();
+    } catch (error) {
+      state.summary.lastError = `Mailbox reload failed: ${error.message}`;
+    }
   });
+
+  async function start() {
+    await loadData();
+    await loadMailboxes();
+    await fetchMe();
+    queueSummaryScan();
+
+    summaryTimer = setInterval(() => { queueSummaryScan(); }, SUMMARY_SCAN_INTERVAL_MS);
+    setInterval(() => { saveData().catch(() => {}); }, DATA_SAVE_INTERVAL_MS);
+
+    app.listen(PORT, () => {
+      console.log(`האימיילים של דוד המלך is live at http://localhost:${PORT}`);
+      console.log(`Admin panel: http://localhost:${PORT}/admin.html`);
+    });
+  }
+
+  start().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+
+  process.on("SIGINT", async () => {
+    if (summaryTimer) clearInterval(summaryTimer);
+    fs.unwatchFile(MAILBOX_FILE);
+    await saveData();
+    process.exit(0);
+  });
+} else {
+  // Serverless cold-start: load mailboxes from MAILBOXES env var
+  loadMailboxes().then(() => fetchMe()).catch(console.error);
 }
-
-start().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
-
-process.on("SIGINT", async () => {
-  if (summaryTimer) clearInterval(summaryTimer);
-  fs.unwatchFile(MAILBOX_FILE);
-  await saveData();
-  process.exit(0);
-});

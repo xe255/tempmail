@@ -6,3 +6,7 @@ npm-debug.log*
 emailpass.txt
 data/
 david.png
+app.js
+index.html
+style.css
+test_request.js

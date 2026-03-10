@@ -13,7 +13,6 @@ const state = {
   selectedMessageId: null,
   messageSearch: "",
   liveStatus: "idle",
-  eventSource: null,
   soundEnabled: localStorage.getItem("dm-sound") !== "off",
   labels: {},   // email → label string
   notes: {},    // email → note string
@@ -221,42 +220,28 @@ function setDisplayEmail(email) {
   });
 }
 
-// ─── Labels ───────────────────────────────────────────────────────────────────
+// ─── Labels & Notes (localStorage) ───────────────────────────────────────────
 
 async function loadLabels() {
-  try {
-    const d = await apiFetch("/api/labels");
-    state.labels = d.labels || {};
-  } catch { state.labels = {}; }
+  try { state.labels = JSON.parse(localStorage.getItem("dm-labels") || "{}"); }
+  catch { state.labels = {}; }
 }
 
 async function loadNotes() {
-  try {
-    const d = await apiFetch("/api/notes");
-    state.notes = d.notes || {};
-  } catch { state.notes = {}; }
+  try { state.notes = JSON.parse(localStorage.getItem("dm-notes") || "{}"); }
+  catch { state.notes = {}; }
 }
 
 async function saveLabel(email, label) {
-  try {
-    const d = await apiFetch("/api/labels", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, label }),
-    });
-    state.labels = d.labels || state.labels;
-  } catch { showToast("Failed to save label."); }
+  if (label) state.labels[email] = label;
+  else delete state.labels[email];
+  localStorage.setItem("dm-labels", JSON.stringify(state.labels));
 }
 
 async function saveNote(email, note) {
-  try {
-    const d = await apiFetch("/api/notes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, note }),
-    });
-    state.notes = d.notes || state.notes;
-  } catch {}
+  if (note) state.notes[email] = note;
+  else delete state.notes[email];
+  localStorage.setItem("dm-notes", JSON.stringify(state.notes));
 }
 
 function renderLabelChip() {
@@ -675,56 +660,14 @@ function updateDocTitle() {
   }
 }
 
-// ─── SSE stream ───────────────────────────────────────────────────────────────
+// ─── Polling (replaces SSE for serverless compatibility) ──────────────────────
 
 function connectStream() {
-  if (state.eventSource) {
-    state.eventSource.close();
-    state.eventSource = null;
-  }
   if (!state.selectedMailbox) {
     setLiveStatus("idle");
     return;
   }
-
-  setLiveStatus("connecting");
-  const src = new EventSource(`/api/stream?mailbox=${encodeURIComponent(state.selectedMailbox)}`);
-  state.eventSource = src;
-
-  src.addEventListener("connected", () => setLiveStatus("live"));
-
-  src.addEventListener("messages", (event) => {
-    const payload = JSON.parse(event.data);
-    if (payload.mailbox.email !== state.selectedMailbox) return;
-
-    const prevIds = new Set(state.messages.map((m) => m.id));
-    state.messages = payload.messages;
-
-    if (payload.mailbox) {
-      state.accounts = state.accounts.map((a) =>
-        a.email === payload.mailbox.email ? payload.mailbox : a
-      );
-    }
-
-    if (!state.messages.some((m) => m.id === state.selectedMessageId)) {
-      state.selectedMessageId = state.messages[0]?.id || null;
-    }
-
-    const newMsgs = state.messages.filter((m) => !prevIds.has(m.id));
-    if (prevIds.size > 0 && newMsgs.length > 0) {
-      playSound();
-      showToast(`${newMsgs.length} new message${newMsgs.length !== 1 ? "s" : ""} just arrived.`);
-      updateDocTitle();
-    }
-
-    renderInboxList();
-    renderViewer();
-    renderPickerList(el.pickerSearch?.value || "");
-  });
-
-  src.addEventListener("status", () => setLiveStatus("live"));
-  src.addEventListener("error", () => setLiveStatus("error"));
-  src.onerror = () => setLiveStatus("error");
+  setLiveStatus("live");
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
@@ -841,6 +784,11 @@ async function boot() {
     setLiveStatus("error");
     showToast(e.message || "Failed to connect.");
   }
+
+  // Poll active mailbox for new messages every 8s
+  setInterval(() => {
+    if (state.selectedMailbox) loadMessages({ refresh: true }).catch(() => {});
+  }, 8000);
 
   // Poll accounts every 15s
   setInterval(() => {
