@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DarkoMail Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #111827;
+      --bg3: #1f2937;
+      --bg4: #374151;
+      --border: #1f2937;
+      --border2: #374151;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --dim: #6b7280;
+      --primary: #6366f1;
+      --primary-glow: rgba(99,102,241,0.25);
+      --success: #10b981;
+      --success-bg: rgba(16,185,129,0.12);
+      --danger: #ef4444;
+      --danger-bg: rgba(239,68,68,0.12);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245,158,11,0.12);
+      --info: #3b82f6;
+      --info-bg: rgba(59,130,246,0.12);
+      --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Login screen ── */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+    }
+
+    .login-card {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo .shield {
+      width: 52px;
+      height: 52px;
+      background: var(--primary-glow);
+      border: 1px solid var(--primary);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .login-logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .login-logo p {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-top: 4px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 0.9375rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn-login:hover { opacity: 0.9; }
+    .btn-login:active { transform: scale(0.99); }
+
+    .login-error {
+      background: var(--danger-bg);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: var(--danger);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* ── Dashboard ── */
+    #dashboard { display: none; }
+
+    .admin-header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-brand .badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: var(--primary);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .admin-brand strong {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .admin-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-tab {
+      padding: 6px 14px;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .nav-tab:hover { color: var(--text); background: var(--bg3); }
+    .nav-tab.active { color: var(--text); background: var(--bg3); border-color: var(--border2); }
+
+    .admin-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .uptime-badge {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .btn-sm {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: var(--bg3);
+      color: var(--text);
+      transition: all 0.15s;
+    }
+
+    .btn-sm:hover { background: var(--bg4); }
+    .btn-sm.danger { background: var(--danger-bg); border-color: rgba(239,68,68,0.3); color: var(--danger); }
+
+    .admin-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px 24px;
+    }
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.blue::before { background: var(--info); }
+    .stat-card.green::before { background: var(--success); }
+    .stat-card.yellow::before { background: var(--warning); }
+    .stat-card.purple::before { background: var(--primary); }
+    .stat-card.red::before { background: var(--danger); }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+
+    .stat-card.blue .stat-icon { background: var(--info-bg); }
+    .stat-card.green .stat-icon { background: var(--success-bg); }
+    .stat-card.yellow .stat-icon { background: var(--warning-bg); }
+    .stat-card.purple .stat-icon { background: var(--primary-glow); }
+    .stat-card.red .stat-icon { background: var(--danger-bg); }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ── Section headers ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--bg3);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    /* ── Two column layout ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── Tables ── */
+    .data-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .data-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 10px 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--dim);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .data-table td {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .data-table tbody tr { transition: background 0.1s; }
+    .data-table tbody tr:hover { background: var(--bg3); }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8125rem;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .badge-pill.success { background: var(--success-bg); color: var(--success); }
+    .badge-pill.danger  { background: var(--danger-bg);  color: var(--danger);  }
+    .badge-pill.warning { background: var(--warning-bg); color: var(--warning); }
+    .badge-pill.info    { background: var(--info-bg);    color: var(--info);    }
+    .badge-pill.muted   { background: var(--bg3);        color: var(--muted);   }
+
+    /* ── Visitor expand ── */
+    .visitor-toggle {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    .visitor-detail {
+      display: none;
+      background: var(--bg);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .visitor-detail.open { display: block; }
+
+    .mailbox-access-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mailbox-access-item {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+    }
+
+    .mailbox-access-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 12px;
+    }
+
+    .mailbox-access-email {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8125rem;
+      color: var(--primary);
+    }
+
+    .mailbox-access-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .subject-list {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .subject-list-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--dim);
+      margin-bottom: 4px;
+    }
+
+    .subject-item {
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding: 2px 0;
+      border-left: 2px solid var(--border2);
+      padding-left: 8px;
+      margin-bottom: 2px;
+    }
+
+    /* ── Scan status ── */
+    .scan-status-bar {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .scan-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .scan-item-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--dim);
+    }
+
+    .scan-item-value {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .progress-bar-wrap {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    /* ── Activity feed ── */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 14px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+      font-size: 0.8125rem;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+    .activity-item:hover { background: var(--bg3); }
+
+    .activity-time {
+      color: var(--dim);
+      white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding-top: 1px;
+      min-width: 60px;
+    }
+
+    .activity-ip {
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      min-width: 110px;
+    }
+
+    .activity-mailbox {
+      color: var(--primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--dim);
+      font-size: 0.9375rem;
+    }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      box-shadow: var(--card-shadow);
+      z-index: 1000;
+      animation: slideIn 0.2s ease-out;
+    }
+
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+
+    .refresh-btn:hover { color: var(--text); border-color: var(--primary); }
+
+    .btn-danger-sm {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--dim);
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.15s;
+    }
+
+    .btn-danger-sm:hover { background: var(--danger-bg); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+
+    .ua-text {
+      font-size: 0.7rem;
+      color: var(--dim);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 250px;
+    }
+
+    #refreshTimer {
+      color: var(--dim);
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Login Screen ── -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="shield">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
+      <h1>DarkoMail Admin</h1>
+      <p>Restricted access — authorized personnel only</p>
+    </div>
+    <div id="loginError" class="login-error"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUsername" placeholder="darko" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- ── Dashboard ── -->
+<div id="dashboard">
+  <header class="admin-header">
+    <div class="admin-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <strong>DarkoMail</strong>
+      <span class="badge">Admin</span>
+    </div>
+    <nav class="admin-nav">
+      <button class="nav-tab active" onclick="switchTab('overview')">Overview</button>
+      <button class="nav-tab" onclick="switchTab('visitors')">Visitors</button>
+      <button class="nav-tab" onclick="switchTab('mailboxes')">Mailboxes</button>
+      <button class="nav-tab" onclick="switchTab('activity')">Activity</button>
+    </nav>
+    <div class="admin-header-actions">
+      <span id="refreshTimer"></span>
+      <a href="/" class="btn-sm">← Back to app</a>
+      <button class="btn-sm danger" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="admin-content">
+
+    <!-- ── Overview Tab ── -->
+    <div id="tab-overview" class="tab-panel active">
+
+      <div class="scan-status-bar" id="scanStatusBar">
+        <div class="scan-item">
+          <span class="scan-item-label">Scan Status</span>
+          <span class="scan-item-value" id="scanStatusText">—</span>
+        </div>
+        <div class="scan-item">
+          <span class="scan-item-label">Progress</span>
+          <span class="scan-item-value" id="scanProgress">—</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="scan-item-label">Scan progress</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="scan-item">
+          <span class="scan-item-label">Last Completed</span>
+          <span class="scan-item-value" id="lastScanTime">—</span>
+        </div>
+        <button class="btn-sm" onclick="triggerScan()" style="margin-left:auto">▶ Trigger Scan</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="statVisitors">—</div>
+          <div class="stat-label">Unique Visitors</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">🖥️</div>
+          <div class="stat-value" id="statSessions">—</div>
+          <div class="stat-label">Total Sessions</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">📬</div>
+          <div class="stat-value" id="statMailboxes">—</div>
+          <div class="stat-label">Active Mailboxes</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-icon">✉️</div>
+          <div class="stat-value" id="statMessages">—</div>
+          <div class="stat-label">Total Messages</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="statReady">—</div>
+          <div class="stat-label">Mailboxes OK</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-value" id="statErrors">—</div>
+          <div class="stat-label">Mailbox Errors</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon">🔌</div>
+          <div class="stat-value" id="statApiCalls">—</div>
+          <div class="stat-label">API Calls</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-value" id="statUptime">—</div>
+          <div class="stat-label">Uptime</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Recent visitors -->
+        <div>
+          <div class="section-header">
+            <div class="section-title">Recent Visitors <span class="section-count" id="visitorCount">0</span></div>
+          </div>
+          <div class="data-card">
+            <div id="recentVisitorsList">
+              <div class="empty-state">No visitors yet.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account info -->
+        <div>
+          <div class="section-header">
+            <div class="section-title">NotLetters Account</div>
+          </div>
+          <div class="data-card">
+            <table class="data-table" id="meTable">
+              <tr><td colspan="2" class="empty-state">Loading...</td></tr>
+            </table>
+          </div>
+
+          <div class="section-header" style="margin-top:20px">
+            <div class="section-title">Server Info</div>
+          </div>
+          <div class="data-card">
+            <table class="data-table" id="serverInfoTable">
+              <tr><td colspan="2" class="empty-state">Loading...</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Visitors Tab ── -->
+    <div id="tab-visitors" class="tab-panel">
+      <div class="section-header">
+        <div class="section-title">All Visitors <span class="section-count" id="visitorsTabCount">0</span></div>
+        <button class="refresh-btn" onclick="loadStats()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="data-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>IP Address</th>
+              <th>User Agent</th>
+              <th>Sessions</th>
+              <th>API Calls</th>
+              <th>Mailboxes</th>
+              <th>First Seen</th>
+              <th>Last Seen</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="visitorsTableBody">
+            <tr><td colspan="8" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Mailboxes Tab ── -->
+    <div id="tab-mailboxes" class="tab-panel">
+      <div class="section-header">
+        <div class="section-title">Mailbox Health <span class="section-count" id="mailboxesTabCount">0</span></div>
+        <button class="refresh-btn" onclick="loadStats()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="data-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Email</th>
+              <th>Label</th>
+              <th>Status</th>
+              <th>Messages</th>
+              <th>Latest Subject</th>
+              <th>Latest Received</th>
+              <th>Last Synced</th>
+            </tr>
+          </thead>
+          <tbody id="mailboxesTableBody">
+            <tr><td colspan="8" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Activity Tab ── -->
+    <div id="tab-activity" class="tab-panel">
+      <div class="section-header">
+        <div class="section-title">Recent Activity</div>
+        <button class="refresh-btn" onclick="loadActivity()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="data-card">
+        <div id="activityFeed">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let currentTab = 'overview';
+  let autoRefreshTimer = null;
+  let refreshCountdown = 30;
+  let statsData = null;
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+
+  async function doLogin() {
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+
+    btn.textContent = 'Signing in...';
+    btn.disabled = true;
+    errEl.style.display = 'none';
+
+    try {
+      const res = await fetch('/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed.');
+      showDashboard();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+      btn.textContent = 'Sign in';
+      btn.disabled = false;
+    }
+  }
+
+  async function doLogout() {
+    await fetch('/admin/logout', { method: 'POST' });
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+
+  async function checkAuth() {
+    try {
+      const res = await fetch('/admin/api/stats');
+      if (res.ok) { showDashboard(); return true; }
+    } catch {}
+    return false;
+  }
+
+  function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadStats();
+    loadActivity();
+    startAutoRefresh();
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      if (t.textContent.toLowerCase().startsWith(name)) t.classList.add('active');
+    });
+    currentTab = name;
+    if (name === 'activity') loadActivity();
+  }
+
+  // ── Auto refresh ──────────────────────────────────────────────────────────
+
+  function startAutoRefresh() {
+    clearInterval(autoRefreshTimer);
+    refreshCountdown = 30;
+    autoRefreshTimer = setInterval(() => {
+      refreshCountdown--;
+      const el = document.getElementById('refreshTimer');
+      if (el) el.textContent = `Auto-refresh in ${refreshCountdown}s`;
+      if (refreshCountdown <= 0) {
+        refreshCountdown = 30;
+        loadStats();
+        if (currentTab === 'activity') loadActivity();
+      }
+    }, 1000);
+  }
+
+  // ── Stats Loading ─────────────────────────────────────────────────────────
+
+  async function loadStats() {
+    try {
+      const res = await fetch('/admin/api/stats');
+      if (!res.ok) { if (res.status === 401) { location.reload(); return; } throw new Error('Failed'); }
+      statsData = await res.json();
+      renderOverview(statsData);
+      renderVisitorsTable(statsData);
+      renderMailboxesTable(statsData);
+    } catch (e) {
+      console.error('Stats load failed:', e);
+    }
+  }
+
+  async function loadActivity() {
+    try {
+      const res = await fetch('/admin/api/activity');
+      if (!res.ok) return;
+      const { activity } = await res.json();
+      renderActivity(activity);
+    } catch {}
+  }
+
+  // ── Render: Overview ─────────────────────────────────────────────────────
+
+  function renderOverview(d) {
+    setText('statVisitors', d.uniqueVisitors);
+    setText('statSessions', d.totalSessions);
+    setText('statMailboxes', d.mailboxCount);
+    setText('statMessages', d.totalMessages);
+    setText('statReady', d.mailboxesReady);
+    setText('statErrors', d.mailboxesErrored);
+    setText('statApiCalls', d.totalApiCalls);
+    setText('statUptime', fmtUptime(d.uptimeMs));
+
+    // Scan status
+    const s = d.summary;
+    const isRunning = s.isRunning;
+    setText('scanStatusText', isRunning ? '🔄 Running' : (s.lastError ? '❌ Error' : '✅ Idle'));
+    setText('scanProgress', isRunning ? `${s.processed} / ${s.total}` : `${s.total} mailboxes`);
+    setText('lastScanTime', s.lastCompletedAt ? fmtRelative(s.lastCompletedAt) : 'Never');
+    const pct = s.total > 0 ? Math.round((s.processed / s.total) * 100) : (isRunning ? 0 : 100);
+    const fill = document.getElementById('progressFill');
+    if (fill) fill.style.width = (isRunning ? pct : 100) + '%';
+
+    // NotLetters account info
+    const meTable = document.getElementById('meTable');
+    if (meTable) {
+      const me = d.me;
+      if (me) {
+        meTable.innerHTML = tableRows([
+          ['Username', me.username || '—'],
+          ['Email', me.email || '—'],
+          ['Balance', me.balance !== undefined ? me.balance : '—'],
+          ['Plan', me.plan || me.subscription || '—'],
+          ['Mailboxes', me.mailboxes_count || me.mailbox_count || d.mailboxCount],
+        ]);
+      } else {
+        meTable.innerHTML = `<tr><td colspan="2" class="empty-state">Account info unavailable</td></tr>`;
+      }
+    }
+
+    // Server info
+    const serverTable = document.getElementById('serverInfoTable');
+    if (serverTable) {
+      serverTable.innerHTML = tableRows([
+        ['Started', new Date(d.serverStartedAt).toLocaleString()],
+        ['Uptime', fmtUptime(d.uptimeMs)],
+        ['Total API Calls', d.totalApiCalls],
+        ['Unique Visitors', d.uniqueVisitors],
+        ['Total Sessions', d.totalSessions],
+        ['Mailbox Count', d.mailboxCount],
+        ['Messages Cached', d.totalMessages],
+      ]);
+    }
+
+    // Recent visitors (top 5)
+    const rvList = document.getElementById('recentVisitorsList');
+    const visitorCount = document.getElementById('visitorCount');
+    if (visitorCount) visitorCount.textContent = d.uniqueVisitors;
+
+    if (rvList) {
+      const visitors = (statsData._visitors || []).slice(0, 5);
+      if (visitors.length === 0) {
+        rvList.innerHTML = '<div class="empty-state">No visitors yet.</div>';
+      } else {
+        rvList.innerHTML = visitors.map(v => `
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <div>
+              <div class="mono" style="font-size:0.875rem;margin-bottom:2px">${esc(v.ip)}</div>
+              <div class="ua-text">${esc(v.userAgent)}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:0.75rem;color:var(--muted)">${v.sessions} sessions · ${v.mailboxCount || 0} mailboxes</div>
+              <div style="font-size:0.7rem;color:var(--dim)">${fmtRelative(v.lastSeen)}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  }
+
+  // ── Render: Visitors Tab ──────────────────────────────────────────────────
+
+  async function renderVisitorsTable(d) {
+    try {
+      const res = await fetch('/admin/api/visitors');
+      const { visitors } = await res.json();
+      statsData._visitors = visitors;
+
+      const tbody = document.getElementById('visitorsTableBody');
+      const countEl = document.getElementById('visitorsTabCount');
+      if (countEl) countEl.textContent = visitors.length;
+
+      if (!visitors.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No visitors recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = visitors.map((v, i) => {
+        const mbKeys = Object.keys(v.mailboxesAccessed || {});
+        return `
+          <tr>
+            <td class="mono">${esc(v.ip)}</td>
+            <td><div class="ua-text">${esc(v.userAgent)}</div></td>
+            <td>${v.sessions}</td>
+            <td>${v.apiCalls}</td>
+            <td>
+              <button class="visitor-toggle" onclick="toggleVisitor('v${i}', this)">${mbKeys.length} mailbox${mbKeys.length !== 1 ? 'es' : ''}</button>
+            </td>
+            <td style="color:var(--muted);font-size:0.8rem">${fmtDate(v.firstSeen)}</td>
+            <td style="color:var(--muted);font-size:0.8rem">${fmtRelative(v.lastSeen)}</td>
+            <td>
+              <button class="btn-danger-sm" onclick="deleteVisitor('${esc(v.ip)}', this)">Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="8" style="padding:0">
+              <div id="v${i}" class="visitor-detail">
+                ${renderVisitorDetail(v)}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function renderVisitorDetail(v) {
+    const mbs = Object.entries(v.mailboxesAccessed || {});
+    if (!mbs.length) return '<div style="padding:16px;color:var(--dim)">No mailboxes accessed.</div>';
+
+    return `
+      <div class="mailbox-access-list">
+        ${mbs.map(([email, mb]) => `
+          <div class="mailbox-access-item">
+            <div class="mailbox-access-header">
+              <span class="mailbox-access-email">${esc(email)}</span>
+              <span class="badge-pill info">${mb.accessCount} access${mb.accessCount !== 1 ? 'es' : ''}</span>
+            </div>
+            <div class="mailbox-access-meta">
+              <span>First: ${fmtDate(mb.firstAccessed)}</span>
+              <span>Last: ${fmtRelative(mb.lastAccessed)}</span>
+              ${mb.messagesSeen ? `<span>${mb.messagesSeen} msgs seen</span>` : ''}
+            </div>
+            ${mb.subjects && mb.subjects.length ? `
+              <div class="subject-list">
+                <div class="subject-list-label">Recent subjects</div>
+                ${mb.subjects.slice(0, 5).map(s => `<div class="subject-item">${esc(s)}</div>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function toggleVisitor(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const open = el.classList.toggle('open');
+    btn.textContent = open
+      ? btn.textContent.replace('mailbox', 'mailbox').replace('→', '↓')
+      : btn.textContent;
+  }
+
+  async function deleteVisitor(ip, btn) {
+    if (!confirm(`Delete visitor ${ip}? This cannot be undone.`)) return;
+    btn.disabled = true;
+    try {
+      await fetch(`/admin/api/visitors/${encodeURIComponent(ip)}`, { method: 'DELETE' });
+      showToast(`Visitor ${ip} removed.`);
+      loadStats();
+    } catch {
+      showToast('Delete failed.');
+      btn.disabled = false;
+    }
+  }
+
+  // ── Render: Mailboxes Tab ─────────────────────────────────────────────────
+
+  function renderMailboxesTable(d) {
+    const tbody = document.getElementById('mailboxesTableBody');
+    const countEl = document.getElementById('mailboxesTabCount');
+    if (countEl) countEl.textContent = d.mailboxes.length;
+
+    if (!d.mailboxes.length) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No mailboxes configured.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = d.mailboxes.map((mb, i) => `
+      <tr>
+        <td class="mono" style="color:var(--dim)">${i + 1}</td>
+        <td class="mono">${esc(mb.email)}</td>
+        <td>${mb.label ? `<span class="badge-pill info">${esc(mb.label)}</span>` : '<span style="color:var(--dim)">—</span>'}</td>
+        <td>
+          <span class="badge-pill ${statusClass(mb.status)}">${mb.status}</span>
+          ${mb.error ? `<div style="font-size:0.7rem;color:var(--danger);margin-top:2px">${esc(mb.error)}</div>` : ''}
+        </td>
+        <td class="mono">${mb.totalMessages}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.8rem;color:var(--muted)">${esc(mb.latestSubject || '—')}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${mb.latestReceivedAt ? fmtRelative(mb.latestReceivedAt) : '—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${mb.lastSyncedAt ? fmtRelative(mb.lastSyncedAt) : 'Never'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Render: Activity Feed ─────────────────────────────────────────────────
+
+  function renderActivity(activity) {
+    const feed = document.getElementById('activityFeed');
+    if (!activity.length) {
+      feed.innerHTML = '<div class="empty-state">No activity recorded yet.</div>';
+      return;
+    }
+
+    feed.innerHTML = `
+      <div class="activity-list">
+        ${activity.map(a => `
+          <div class="activity-item">
+            <span class="activity-time">${fmtRelative(a.time)}</span>
+            <span class="activity-ip">${esc(a.ip)}</span>
+            <span class="activity-mailbox">${esc(a.mailbox || a.path || '—')}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // ── Admin Actions ─────────────────────────────────────────────────────────
+
+  async function triggerScan() {
+    try {
+      const res = await fetch('/admin/api/scan', { method: 'POST' });
+      const data = await res.json();
+      showToast('Scan triggered.');
+      setTimeout(loadStats, 500);
+    } catch {
+      showToast('Scan trigger failed.');
+    }
+  }
+
+  // ── Utilities ─────────────────────────────────────────────────────────────
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fmtRelative(iso) {
+    if (!iso) return '—';
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.round(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return new Date(iso).toLocaleDateString();
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString();
+  }
+
+  function fmtUptime(ms) {
+    if (!ms) return '—';
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    if (h >= 24) return `${Math.floor(h/24)}d ${h%24}h`;
+    return `${h}h ${m}m`;
+  }
+
+  function statusClass(s) {
+    if (s === 'ready') return 'success';
+    if (s === 'error') return 'danger';
+    if (s === 'pending') return 'warning';
+    return 'muted';
+  }
+
+  function tableRows(pairs) {
+    return pairs.map(([k, v]) => `
+      <tr>
+        <td style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);width:140px">${esc(k)}</td>
+        <td class="mono" style="font-size:0.875rem">${esc(String(v))}</td>
+      </tr>
+    `).join('');
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+
+  // ── Enter key support ─────────────────────────────────────────────────────
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('loginUsername').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+  });
+
+  // ── Boot ─────────────────────────────────────────────────────────────────
+  checkAuth();
+</script>
+</body>
+</html>

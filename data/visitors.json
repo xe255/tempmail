@@ -1,0 +1,376 @@
+{
+  "::1": {
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "firstSeen": "2026-03-10T07:49:18.025Z",
+    "lastSeen": "2026-03-10T08:08:54.101Z",
+    "sessions": 0,
+    "apiCalls": 142,
+    "mailboxesAccessed": {
+      "uodalrich_5283@antoninusmail.com": {
+        "accessCount": 32,
+        "firstAccessed": "2026-03-10T07:49:18.025Z",
+        "lastAccessed": "2026-03-10T08:08:49.186Z",
+        "messagesSeen": 1,
+        "subjects": [
+          "Stack Overflow: Verify your email address"
+        ]
+      },
+      "zilar_6924@tobagonianmail.com": {
+        "accessCount": 8,
+        "firstAccessed": "2026-03-10T07:51:40.464Z",
+        "lastAccessed": "2026-03-10T07:51:46.820Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "smedley273599@tobagonianmail.com": {
+        "accessCount": 4,
+        "firstAccessed": "2026-03-10T07:51:41.214Z",
+        "lastAccessed": "2026-03-10T07:51:43.530Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "haim_2283@antoninusmail.com": {
+        "accessCount": 2,
+        "firstAccessed": "2026-03-10T08:08:52.492Z",
+        "lastAccessed": "2026-03-10T08:08:52.495Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "theophano10@plottermail.com": {
+        "accessCount": 2,
+        "firstAccessed": "2026-03-10T08:08:52.994Z",
+        "lastAccessed": "2026-03-10T08:08:52.997Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "urjasz313006@tobagonianmail.com": {
+        "accessCount": 2,
+        "firstAccessed": "2026-03-10T08:08:53.254Z",
+        "lastAccessed": "2026-03-10T08:08:53.257Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "stacey54@plottermail.com": {
+        "accessCount": 2,
+        "firstAccessed": "2026-03-10T08:08:53.475Z",
+        "lastAccessed": "2026-03-10T08:08:53.478Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "carpenter356379@antoninusmail.com": {
+        "accessCount": 2,
+        "firstAccessed": "2026-03-10T08:08:53.663Z",
+        "lastAccessed": "2026-03-10T08:08:53.667Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "raghu444727@antoninusmail.com": {
+        "accessCount": 2,
+        "firstAccessed": "2026-03-10T08:08:53.873Z",
+        "lastAccessed": "2026-03-10T08:08:53.878Z",
+        "messagesSeen": 0,
+        "subjects": []
+      },
+      "terry92185@antoninusmail.com": {
+        "accessCount": 2,
+        "firstAccessed": "2026-03-10T08:08:54.099Z",
+        "lastAccessed": "2026-03-10T08:08:54.101Z",
+        "messagesSeen": 0,
+        "subjects": []
+      }
+    },
+    "recentActivity": [
+      {
+        "time": "2026-03-10T08:08:54.101Z",
+        "path": "/api/stream",
+        "mailbox": "terry92185@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:54.099Z",
+        "path": "/api/messages",
+        "mailbox": "terry92185@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.878Z",
+        "path": "/api/stream",
+        "mailbox": "raghu444727@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.873Z",
+        "path": "/api/messages",
+        "mailbox": "raghu444727@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.667Z",
+        "path": "/api/stream",
+        "mailbox": "carpenter356379@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.663Z",
+        "path": "/api/messages",
+        "mailbox": "carpenter356379@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.478Z",
+        "path": "/api/stream",
+        "mailbox": "stacey54@plottermail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.475Z",
+        "path": "/api/messages",
+        "mailbox": "stacey54@plottermail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.257Z",
+        "path": "/api/stream",
+        "mailbox": "urjasz313006@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:53.254Z",
+        "path": "/api/messages",
+        "mailbox": "urjasz313006@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:52.997Z",
+        "path": "/api/stream",
+        "mailbox": "theophano10@plottermail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:52.994Z",
+        "path": "/api/messages",
+        "mailbox": "theophano10@plottermail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:52.495Z",
+        "path": "/api/stream",
+        "mailbox": "haim_2283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:52.492Z",
+        "path": "/api/messages",
+        "mailbox": "haim_2283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:49.186Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:08:49.185Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:07:40.684Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:07:40.671Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:06:57.951Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:06:57.946Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:05:55.226Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:05:55.222Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:02:17.594Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:02:17.588Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:02:16.944Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:02:16.932Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:02:05.617Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:02:05.615Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:00:27.284Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:00:26.320Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:00:25.926Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T08:00:25.246Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:58:12.445Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:58:12.444Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:57:58.456Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:47.120Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:47.118Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:46.820Z",
+        "path": "/api/stream",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:46.816Z",
+        "path": "/api/messages",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:46.165Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:46.162Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:45.840Z",
+        "path": "/api/stream",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:45.835Z",
+        "path": "/api/messages",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:43.891Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:43.886Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:43.530Z",
+        "path": "/api/stream",
+        "mailbox": "smedley273599@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:43.526Z",
+        "path": "/api/messages",
+        "mailbox": "smedley273599@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:43.260Z",
+        "path": "/api/stream",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:43.258Z",
+        "path": "/api/messages",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:41.712Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:41.707Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:41.217Z",
+        "path": "/api/stream",
+        "mailbox": "smedley273599@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:41.214Z",
+        "path": "/api/messages",
+        "mailbox": "smedley273599@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:40.466Z",
+        "path": "/api/stream",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:40.464Z",
+        "path": "/api/messages",
+        "mailbox": "zilar_6924@tobagonianmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:02.990Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:51:02.604Z",
+        "path": "/api/messages",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      },
+      {
+        "time": "2026-03-10T07:49:18.025Z",
+        "path": "/api/stream",
+        "mailbox": "uodalrich_5283@antoninusmail.com"
+      }
+    ]
+  }
+}

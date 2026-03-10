@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>האימיילים של דוד המלך</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@700;800;900&family=Syne+Mono&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <a href="/" class="logo">
+                    <img class="logo-avatar" src="david.png" alt="David">
+                    <span class="logo-text">האימיילים של דוד המלך</span>
+                </a>
+            </div>
+            <div class="header-right">
+                <span class="status-pill"><span class="pulse-dot"></span>LIVE</span>
+                <span class="status-tag">NO LOGS</span>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+                    <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="app-wrap">
+
+            <!-- Generator Card -->
+            <div class="gen-card">
+
+                <div class="gen-card-top">
+                    <span class="gen-label">ACTIVE ADDRESS</span>
+                    <span class="gen-label" id="mailboxCounter">100 mailboxes</span>
+                </div>
+
+                <div class="gen-card-body">
+                    <div class="address-row">
+                        <span class="address-text" id="emailDisplay" onclick="copyEmail()" title="Click to copy">generating...</span>
+                    </div>
+                    <div class="gen-actions">
+                        <button class="btn btn-copy" id="copyBtn" onclick="copyEmail()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="1.5"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span id="copyLabel">COPY</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="randomMailbox()" title="Pick a random mailbox">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 3 21 3 21 8"/>
+                                <line x1="4" y1="20" x2="21" y2="3"/>
+                                <polyline points="21 16 21 21 16 21"/>
+                                <line x1="15" y1="15" x2="21" y2="21"/>
+                            </svg>
+                            RANDOM
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mailbox Picker -->
+                <div class="picker-section">
+                    <button class="picker-toggle" onclick="togglePicker()" id="pickerToggle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <span>SWITCH MAILBOX</span>
+                        <svg class="picker-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="picker-body" id="pickerBody">
+                        <div class="picker-search-wrap">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input
+                                class="picker-search"
+                                id="pickerSearch"
+                                type="text"
+                                placeholder="Search mailboxes..."
+                                oninput="filterMailboxes(this.value)"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                            <span class="picker-count" id="pickerCount">100</span>
+                        </div>
+                        <div class="picker-list" id="pickerList"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Inbox -->
+            <div class="inbox-section">
+                <div class="inbox-sidebar">
+                    <div class="inbox-header">
+                        <span class="inbox-title">INBOX</span>
+                        <span class="inbox-badge" id="messageCount">0</span>
+                    </div>
+                    <div class="inbox-list" id="inboxList">
+                        <div class="inbox-empty">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            <p>Waiting for messages</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="email-viewer" id="emailViewer">
+                    <div class="viewer-empty" id="viewerEmpty">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        <p>Select a message</p>
+                    </div>
+                    <div class="email-content" id="emailContent"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
