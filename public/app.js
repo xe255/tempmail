@@ -591,11 +591,15 @@ async function loadAccounts() {
     el.mailboxCounter.textContent = `${data.accounts.length} mailbox${data.accounts.length !== 1 ? "es" : ""}`;
   }
 
-  // Auto-select first mailbox
+  // Auto-select a random mailbox on every page load, different from the last one
   if (!state.selectedMailbox && data.accounts.length > 0) {
-    const first = sortedAccounts()[0];
-    state.selectedMailbox = first.email;
-    setDisplayEmail(first.email);
+    const lastEmail = localStorage.getItem("dm-last-mailbox");
+    const others = data.accounts.filter((a) => a.email !== lastEmail);
+    const pool = others.length > 0 ? others : data.accounts;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    state.selectedMailbox = pick.email;
+    localStorage.setItem("dm-last-mailbox", pick.email);
+    setDisplayEmail(pick.email);
     renderLabelChip();
     loadNoteIntoTextarea();
   }
