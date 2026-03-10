@@ -786,13 +786,18 @@ app.post("/admin/api/scan", requireAdmin, (_req, res) => {
   res.json({ started: true, summary: state.summary });
 });
 
-// ─── Export app for serverless (Netlify Functions) ────────────────────────────
+// ─── Export app + init helpers for serverless ─────────────────────────────────
 
 module.exports = app;
+module.exports.init = async function () {
+  try { await loadData(); } catch {}
+  try { await loadMailboxes(); } catch (e) { console.error("loadMailboxes:", e.message); }
+  try { await fetchMe(); } catch {}
+};
 
-// ─── Local dev: file watcher + server startup ─────────────────────────────────
+// ─── Local dev only: file watcher + server startup ────────────────────────────
 
-if (!process.env.NETLIFY) {
+if (require.main === module) {
   fs.watchFile(MAILBOX_FILE, { interval: 3000 }, async (current, previous) => {
     if (current.mtimeMs === previous.mtimeMs) return;
     try {
@@ -829,7 +834,4 @@ if (!process.env.NETLIFY) {
     await saveData();
     process.exit(0);
   });
-} else {
-  // Serverless cold-start: load mailboxes from MAILBOXES env var
-  loadMailboxes().then(() => fetchMe()).catch(console.error);
 }
