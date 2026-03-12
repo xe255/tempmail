@@ -519,7 +519,7 @@ function renderViewer() {
     </div>
     <div class="email-subject-display">${esc(msg.subject)}</div>
     <div class="email-body" id="emailBodyWrap">
-      <iframe class="email-body-iframe" id="emailFrame" sandbox="allow-same-origin" title="Email body"></iframe>
+      <iframe class="email-body-iframe" id="emailFrame" sandbox="allow-same-origin allow-popups" title="Email body"></iframe>
       <div class="email-text-view" id="emailTextView">${esc(msg.text || "")}</div>
     </div>
     <div class="email-toolbar">
@@ -534,7 +534,7 @@ function renderViewer() {
   if (frame) {
     const doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
-    doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:16px;font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6;color:#333;background:#fff;}img{max-width:100%;}a{color:#a86800;}</style></head><body>${html}</body></html>`);
+    doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><base target="_blank"><style>body{margin:0;padding:16px;font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6;color:#333;background:#fff;}img{max-width:100%;}a{color:#a86800;}</style></head><body>${html}</body></html>`);
     doc.close();
     const resize = () => {
       try { frame.style.height = (frame.contentDocument.body.scrollHeight + 24) + "px"; } catch {}
