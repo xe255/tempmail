@@ -455,10 +455,14 @@ function renderInboxList({ force = false } = {}) {
   _inboxFingerprint = fingerprint;
 
   if (messages.length === 0) {
+    let emptyHint = state.selectedMailbox ? "No messages yet" : "Select a mailbox";
+    if (!state.selectedMailbox && IS_DAVID_PAGE && state.accounts.length === 0) {
+      emptyHint = "David list is empty — add email:password lines to davidpass.txt in the deploy.";
+    }
     el.inboxList.innerHTML = `
       <div class="inbox-empty">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        <p>${state.selectedMailbox ? "No messages yet" : "Select a mailbox"}</p>
+        <p>${emptyHint}</p>
       </div>`;
     return;
   }
@@ -827,6 +831,14 @@ async function boot() {
       renderViewer();
     } else {
       setLiveStatus("idle");
+      if (IS_DAVID_PAGE && (data.accounts || []).length === 0 && el.viewerEmpty) {
+        const p = el.viewerEmpty.querySelector("p");
+        if (p) {
+          p.textContent =
+            "No David mailboxes configured. Add up to 100 lines to davidpass.txt and redeploy.";
+        }
+      }
+      renderInboxList();
     }
   } catch (e) {
     setLiveStatus("error");
