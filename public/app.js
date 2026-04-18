@@ -519,7 +519,7 @@ function renderViewer() {
     </div>
     <div class="email-subject-display">${esc(msg.subject)}</div>
     <div class="email-body" id="emailBodyWrap">
-      <iframe class="email-body-iframe" id="emailFrame" sandbox="allow-same-origin allow-popups" title="Email body"></iframe>
+      <iframe class="email-body-iframe" id="emailFrame" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" title="Email body"></iframe>
       <div class="email-text-view" id="emailTextView">${esc(msg.text || "")}</div>
     </div>
     <div class="email-toolbar">
