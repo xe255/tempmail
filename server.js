@@ -1108,7 +1108,7 @@ if (require.main === module) {
     setInterval(() => { saveData().catch(() => {}); }, DATA_SAVE_INTERVAL_MS);
 
     app.listen(PORT, () => {
-      console.log(`האימיילים של דוד המלך is live at http://localhost:${PORT}`);
+      console.log(`האימיילים של דוד is live at http://localhost:${PORT}`);
       console.log(`Admin panel: http://localhost:${PORT}/admin.html`);
     });
   }

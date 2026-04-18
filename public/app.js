@@ -1,5 +1,5 @@
 /* ===========================
-   האימיילים של דוד המלך — app.js
+   האימיילים של דוד — app.js
    Real backend + new design
    =========================== */
 
@@ -158,7 +158,7 @@ function applyTheme() {
 
 function applyPageVariant() {
   if (!IS_DAVID_PAGE) return;
-  document.title = "David — האימיילים של דוד המלך";
+  document.title = "David — האימיילים של דוד";
   document.body.classList.add("page-david");
   const badge = document.getElementById("davidExclusiveBadge");
   if (badge) badge.classList.remove("hidden");
@@ -680,8 +680,8 @@ async function loadMessages({ refresh = false } = {}) {
 
 function updateDocTitle() {
   const orig = IS_DAVID_PAGE
-    ? "David — האימיילים של דוד המלך"
-    : "האימיילים של דוד המלך";
+    ? "David — האימיילים של דוד"
+    : "האימיילים של דוד";
   document.title = `(★) New message — ${orig}`;
   setTimeout(() => { document.title = orig; }, 5000);
 
