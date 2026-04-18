@@ -3,7 +3,12 @@
   functions = "netlify/functions"
 
 [functions]
-  included_files = ["emailpass.txt"]
+  included_files = ["emailpass.txt", "davidpass.txt"]
+
+[[redirects]]
+  from = "/da"
+  to = "/index.html"
+  status = 200
 
 [[redirects]]
   from = "/api/*"

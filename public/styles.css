@@ -188,6 +188,22 @@ body.dark .scanlines { opacity: 1; }
     gap: 8px;
 }
 
+.david-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--radius);
+    background: var(--amber-dim);
+    border: 1px solid var(--amber-border);
+    color: var(--amber-bright);
+}
+
+body.dark .david-badge {
+    background: rgba(192, 120, 8, 0.14);
+}
+
 .header-right {
     display: flex;
     align-items: center;

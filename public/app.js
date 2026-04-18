@@ -3,6 +3,14 @@
    Real backend + new design
    =========================== */
 
+const IS_DAVID_PAGE =
+  typeof window !== "undefined" && /^\/da(\/|$)/.test(window.location.pathname || "");
+const API_PREFIX = IS_DAVID_PAGE ? "/api/da" : "/api";
+const LAST_MAILBOX_KEY = IS_DAVID_PAGE ? "dm-david-last-mailbox" : "dm-last-mailbox";
+const LABELS_KEY = IS_DAVID_PAGE ? "dm-david-labels" : "dm-labels";
+const NOTES_KEY = IS_DAVID_PAGE ? "dm-david-notes" : "dm-notes";
+const NOTES_OPEN_KEY = IS_DAVID_PAGE ? "dm-david-notes-open" : "dm-notes-open";
+
 // ─── State ────────────────────────────────────────────────────────────────────
 
 const state = {
@@ -18,7 +26,7 @@ const state = {
   notes: {},    // email → note string
   labelEditing: false,
   notesSaveTimer: null,
-  notesOpen: localStorage.getItem("dm-notes-open") === "1",
+  notesOpen: localStorage.getItem(NOTES_OPEN_KEY) === "1",
   pickerOpen: false,
 };
 
@@ -147,6 +155,18 @@ function applyTheme() {
   document.body.classList.toggle("dark", dark);
 }
 
+function applyPageVariant() {
+  if (!IS_DAVID_PAGE) return;
+  document.title = "David — האימיילים של דוד המלך";
+  document.body.classList.add("page-david");
+  const badge = document.getElementById("davidExclusiveBadge");
+  if (badge) badge.classList.remove("hidden");
+  const adminLink = document.getElementById("adminLink");
+  if (adminLink) adminLink.classList.add("hidden");
+  const logo = document.querySelector(".logo");
+  if (logo) logo.setAttribute("href", "/da");
+}
+
 function toggleTheme() {
   const isDark = document.body.classList.toggle("dark");
   localStorage.setItem("dm-theme", isDark ? "dark" : "light");
@@ -223,25 +243,25 @@ function setDisplayEmail(email) {
 // ─── Labels & Notes (localStorage) ───────────────────────────────────────────
 
 async function loadLabels() {
-  try { state.labels = JSON.parse(localStorage.getItem("dm-labels") || "{}"); }
+  try { state.labels = JSON.parse(localStorage.getItem(LABELS_KEY) || "{}"); }
   catch { state.labels = {}; }
 }
 
 async function loadNotes() {
-  try { state.notes = JSON.parse(localStorage.getItem("dm-notes") || "{}"); }
+  try { state.notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "{}"); }
   catch { state.notes = {}; }
 }
 
 async function saveLabel(email, label) {
   if (label) state.labels[email] = label;
   else delete state.labels[email];
-  localStorage.setItem("dm-labels", JSON.stringify(state.labels));
+  localStorage.setItem(LABELS_KEY, JSON.stringify(state.labels));
 }
 
 async function saveNote(email, note) {
   if (note) state.notes[email] = note;
   else delete state.notes[email];
-  localStorage.setItem("dm-notes", JSON.stringify(state.notes));
+  localStorage.setItem(NOTES_KEY, JSON.stringify(state.notes));
 }
 
 function renderLabelChip() {
@@ -293,7 +313,7 @@ function cancelLabel() {
 
 function toggleNotes() {
   state.notesOpen = !state.notesOpen;
-  localStorage.setItem("dm-notes-open", state.notesOpen ? "1" : "0");
+  localStorage.setItem(NOTES_OPEN_KEY, state.notesOpen ? "1" : "0");
   applyNotesState();
 }
 
@@ -580,7 +600,7 @@ function hideCodBanner() {
 // ─── Data loading ─────────────────────────────────────────────────────────────
 
 async function loadAccounts() {
-  const data = await apiFetch("/api/accounts");
+  const data = await apiFetch(`${API_PREFIX}/accounts`);
   const prevTotal = state.accounts.reduce((s, a) => s + (a.newMessageCount || 0), 0);
   const nextTotal = data.accounts.reduce((s, a) => s + (a.newMessageCount || 0), 0);
 
@@ -593,12 +613,12 @@ async function loadAccounts() {
 
   // Auto-select a random mailbox on every page load, different from the last one
   if (!state.selectedMailbox && data.accounts.length > 0) {
-    const lastEmail = localStorage.getItem("dm-last-mailbox");
+    const lastEmail = localStorage.getItem(LAST_MAILBOX_KEY);
     const others = data.accounts.filter((a) => a.email !== lastEmail);
     const pool = others.length > 0 ? others : data.accounts;
     const pick = pool[Math.floor(Math.random() * pool.length)];
     state.selectedMailbox = pick.email;
-    localStorage.setItem("dm-last-mailbox", pick.email);
+    localStorage.setItem(LAST_MAILBOX_KEY, pick.email);
     setDisplayEmail(pick.email);
     renderLabelChip();
     loadNoteIntoTextarea();
@@ -618,7 +638,7 @@ async function loadMessages({ refresh = false } = {}) {
 
   try {
     const data = await apiFetch(
-      `/api/messages?mailbox=${encodeURIComponent(mailbox)}${refresh ? "&refresh=1" : ""}`
+      `${API_PREFIX}/messages?mailbox=${encodeURIComponent(mailbox)}${refresh ? "&refresh=1" : ""}`
     );
 
     if (state.selectedMailbox !== mailbox) return;
@@ -652,8 +672,10 @@ async function loadMessages({ refresh = false } = {}) {
 }
 
 function updateDocTitle() {
-  const orig = "האימיילים של דוד המלך";
-  document.title = "(★) New message — האימיילים של דוד המלך";
+  const orig = IS_DAVID_PAGE
+    ? "David — האימיילים של דוד המלך"
+    : "האימיילים של דוד המלך";
+  document.title = `(★) New message — ${orig}`;
   setTimeout(() => { document.title = orig; }, 5000);
 
   const badge = el.messageCount;
@@ -704,7 +726,7 @@ function randomMailbox() {
 
 async function syncAll() {
   try {
-    await apiFetch("/api/scan", { method: "POST" });
+    await apiFetch(`${API_PREFIX}/scan`, { method: "POST" });
     showToast("Sync started for all mailboxes.");
     await loadAccounts();
   } catch { showToast("Sync failed."); }
@@ -766,6 +788,7 @@ function wireEvents() {
 
 async function boot() {
   applyTheme();
+  applyPageVariant();
   applySoundUI();
   applyNotesState();
   wireEvents();
@@ -774,9 +797,9 @@ async function boot() {
 
   try {
     await Promise.all([loadLabels(), loadNotes()]);
-    const lastMb = localStorage.getItem("dm-last-mailbox") || "";
+    const lastMb = localStorage.getItem(LAST_MAILBOX_KEY) || "";
     const data = await apiFetch(
-      `/api/bootstrap?refresh=1&lastMailbox=${encodeURIComponent(lastMb)}`
+      `${API_PREFIX}/bootstrap?refresh=1&lastMailbox=${encodeURIComponent(lastMb)}`
     );
 
     state.accounts = data.accounts;
@@ -788,7 +811,7 @@ async function boot() {
 
     if (data.selectedMailbox) {
       state.selectedMailbox = data.selectedMailbox;
-      localStorage.setItem("dm-last-mailbox", data.selectedMailbox);
+      localStorage.setItem(LAST_MAILBOX_KEY, data.selectedMailbox);
       state.messages = data.messages || [];
       state.selectedMessageId = state.messages[0]?.id || null;
       if (data.mailbox) {
