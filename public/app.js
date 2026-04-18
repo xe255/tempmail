@@ -773,14 +773,35 @@ async function boot() {
   setLiveStatus("connecting");
 
   try {
-    await Promise.all([loadLabels(), loadNotes(), loadAccounts()]);
+    await Promise.all([loadLabels(), loadNotes()]);
+    const lastMb = localStorage.getItem("dm-last-mailbox") || "";
+    const data = await apiFetch(
+      `/api/bootstrap?refresh=1&lastMailbox=${encodeURIComponent(lastMb)}`
+    );
+
+    state.accounts = data.accounts;
+    state.summary = data.summary;
+    if (el.mailboxCounter) {
+      el.mailboxCounter.textContent = `${data.accounts.length} mailbox${data.accounts.length !== 1 ? "es" : ""}`;
+    }
     renderPickerList("");
 
-    if (state.selectedMailbox) {
+    if (data.selectedMailbox) {
+      state.selectedMailbox = data.selectedMailbox;
+      localStorage.setItem("dm-last-mailbox", data.selectedMailbox);
+      state.messages = data.messages || [];
+      state.selectedMessageId = state.messages[0]?.id || null;
+      if (data.mailbox) {
+        state.accounts = state.accounts.map((a) =>
+          a.email === data.mailbox.email ? data.mailbox : a
+        );
+      }
+      setDisplayEmail(data.selectedMailbox);
       renderLabelChip();
       loadNoteIntoTextarea();
       connectStream();
-      await loadMessages({ refresh: true });
+      renderInboxList();
+      renderViewer();
     } else {
       setLiveStatus("idle");
     }

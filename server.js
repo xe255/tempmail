@@ -518,6 +518,90 @@ app.get("/api/accounts", (_request, response) => {
   response.json({ accounts, summary: state.summary });
 });
 
+function recordVisitorMailboxAccess(req, mailboxEmail) {
+  const ip = getClientIp(req);
+  const visitor = persistedData.visitors[ip];
+  if (!visitor) return;
+  const now = new Date().toISOString();
+  if (!visitor.mailboxesAccessed[mailboxEmail]) {
+    visitor.mailboxesAccessed[mailboxEmail] = {
+      accessCount: 0,
+      firstAccessed: now,
+      lastAccessed: now,
+      messagesSeen: 0,
+      subjects: [],
+    };
+  }
+  const mb = visitor.mailboxesAccessed[mailboxEmail];
+  mb.accessCount++;
+  mb.lastAccessed = now;
+  const activity = { time: now, path: "/api/bootstrap", mailbox: mailboxEmail };
+  visitor.recentActivity.unshift(activity);
+  if (visitor.recentActivity.length > MAX_ACTIVITY_LOG) {
+    visitor.recentActivity.length = MAX_ACTIVITY_LOG;
+  }
+}
+
+/** One round-trip for cold starts: account list + initial mailbox messages (matches client random-pick UX). */
+app.get("/api/bootstrap", async (request, response) => {
+  const refresh = request.query.refresh === "1";
+  const lastMailbox = String(request.query.lastMailbox || "").trim();
+
+  const accounts = state.mailboxes.map(serializeMailbox);
+  const payload = {
+    accounts,
+    summary: state.summary,
+    selectedMailbox: null,
+    mailbox: null,
+    messages: [],
+  };
+
+  if (state.mailboxes.length === 0) {
+    response.json(payload);
+    return;
+  }
+
+  const others = lastMailbox
+    ? state.mailboxes.filter((m) => m.email !== lastMailbox)
+    : state.mailboxes;
+  const pool = others.length > 0 ? others : state.mailboxes;
+  const account = pool[Math.floor(Math.random() * pool.length)];
+  payload.selectedMailbox = account.email;
+
+  try {
+    if (refresh || getCache(account.email).status === "pending") {
+      await fetchMailboxMessages(account);
+    }
+
+    recordVisitorMailboxAccess(request, account.email);
+    const visitor = persistedData.visitors[getClientIp(request)];
+    if (visitor?.mailboxesAccessed[account.email]) {
+      const cache = getCache(account.email);
+      const mb = visitor.mailboxesAccessed[account.email];
+      mb.messagesSeen = cache.messages.length;
+      if (cache.latestSubject) {
+        const subjects = mb.subjects || [];
+        if (!subjects.includes(cache.latestSubject)) {
+          subjects.unshift(cache.latestSubject);
+          if (subjects.length > 10) subjects.length = 10;
+        }
+        mb.subjects = subjects;
+      }
+    }
+
+    payload.mailbox = serializeMailbox(account);
+    payload.messages = getCache(account.email).messages;
+    response.json(payload);
+  } catch (error) {
+    response.status(error.statusCode || 500).json({
+      error: error.message,
+      ...payload,
+      mailbox: serializeMailbox(account),
+      messages: getCache(account.email).messages,
+    });
+  }
+});
+
 app.post("/api/scan", (_request, response) => {
   queueSummaryScan();
   response.json({ started: true, summary: state.summary });
