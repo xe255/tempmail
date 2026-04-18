@@ -11,6 +11,8 @@ const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const API_BASE_URL = "https://api.notletters.com/v1";
 const MAILBOX_FILE = path.join(process.cwd(), "emailpass.txt");
+const DAVID_MAILBOX_FILE = path.join(process.cwd(), "davidpass.txt");
+const DAVID_MAILBOX_CAP = 100;
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = path.join(__dirname, "data");
 const LABELS_FILE = path.join(DATA_DIR, "labels.json");
@@ -43,8 +45,18 @@ const state = {
   meError: null,
   mailboxes: [],
   mailboxMap: new Map(),
+  davidMailboxes: [],
+  davidMailboxMap: new Map(),
   cache: new Map(),
   summary: {
+    isRunning: false,
+    processed: 0,
+    total: 0,
+    lastStartedAt: null,
+    lastCompletedAt: null,
+    lastError: null,
+  },
+  davidSummary: {
     isRunning: false,
     processed: 0,
     total: 0,
@@ -66,6 +78,7 @@ const adminSessions = new Set();
 
 let nextRequestAt = 0;
 let pendingSummaryScan = false;
+let pendingDavidSummaryScan = false;
 let summaryTimer = null;
 let totalApiCalls = 0;
 
@@ -84,6 +97,11 @@ app.use((req, _res, next) => {
 });
 
 app.use(express.json());
+
+app.get("/da", (_req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+});
+
 app.use(express.static(PUBLIC_DIR));
 
 // ─── Visitor tracking middleware ──────────────────────────────────────────────
@@ -319,27 +337,46 @@ async function callNotLetters(endpoint, { method = "GET", body } = {}) {
   }
 }
 
-async function readMailboxesFile() {
-  const raw = await fsp.readFile(MAILBOX_FILE, "utf8");
-  return raw
+async function readMailboxEntries(filePath, { cap = Infinity, optional = false } = {}) {
+  let raw;
+  try {
+    raw = await fsp.readFile(filePath, "utf8");
+  } catch (err) {
+    if (optional) return [];
+    throw err;
+  }
+  const lines = raw
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line, index) => {
-      const separatorIndex = line.indexOf(":");
-      if (separatorIndex === -1) {
-        throw new Error(`Invalid mailbox line ${index + 1}. Expected email:password format.`);
-      }
-      return {
-        index,
-        email: line.slice(0, separatorIndex).trim(),
-        password: line.slice(separatorIndex + 1).trim(),
-      };
-    });
+    .filter((line) => line && !line.startsWith("#"));
+  const capped = lines.slice(0, Math.max(0, cap));
+  return capped.map((line, index) => {
+    const separatorIndex = line.indexOf(":");
+    if (separatorIndex === -1) {
+      throw new Error(
+        `Invalid mailbox line ${index + 1} in ${path.basename(filePath)}. Expected email:password format.`
+      );
+    }
+    return {
+      index,
+      email: line.slice(0, separatorIndex).trim(),
+      password: line.slice(separatorIndex + 1).trim(),
+    };
+  });
+}
+
+async function loadDavidMailboxes() {
+  const entries = await readMailboxEntries(DAVID_MAILBOX_FILE, {
+    cap: DAVID_MAILBOX_CAP,
+    optional: true,
+  });
+  state.davidMailboxes = entries;
+  state.davidMailboxMap = new Map(entries.map((mailbox) => [mailbox.email, mailbox]));
 }
 
 async function loadMailboxes() {
-  const mailboxes = await readMailboxesFile();
+  const allMain = await readMailboxEntries(MAILBOX_FILE, { cap: Infinity, optional: false });
+  const mailboxes = allMain.filter((m) => !state.davidMailboxMap.has(m.email));
   const mailboxMap = new Map(mailboxes.map((mailbox) => [mailbox.email, mailbox]));
   const nextCache = new Map();
 
@@ -348,10 +385,19 @@ async function loadMailboxes() {
       nextCache.set(mailbox.email, state.cache.get(mailbox.email));
     }
   }
+  for (const mailbox of state.davidMailboxes) {
+    if (state.cache.has(mailbox.email)) {
+      nextCache.set(mailbox.email, state.cache.get(mailbox.email));
+    }
+  }
 
   state.mailboxes = mailboxes;
   state.mailboxMap = mailboxMap;
   state.cache = nextCache;
+}
+
+function getDavidMailbox(email) {
+  return state.davidMailboxMap.get(email) || null;
 }
 
 async function fetchMe() {
@@ -440,10 +486,55 @@ async function runSummaryScan() {
   }
 }
 
+async function runDavidSummaryScan() {
+  if (state.davidSummary.isRunning) {
+    pendingDavidSummaryScan = true;
+    return;
+  }
+
+  state.davidSummary = {
+    ...state.davidSummary,
+    isRunning: true,
+    processed: 0,
+    total: state.davidMailboxes.length,
+    lastStartedAt: new Date().toISOString(),
+    lastError: null,
+  };
+
+  try {
+    for (let index = 0; index < state.davidMailboxes.length; index += 1) {
+      const account = state.davidMailboxes[index];
+      try {
+        await fetchMailboxMessages(account);
+      } catch {
+        // Per-mailbox errors are persisted in cache and surfaced in the UI.
+      }
+      state.davidSummary.processed = index + 1;
+    }
+    state.davidSummary.lastCompletedAt = new Date().toISOString();
+  } catch (error) {
+    state.davidSummary.lastError = error.message;
+  } finally {
+    state.davidSummary.isRunning = false;
+  }
+
+  if (pendingDavidSummaryScan) {
+    pendingDavidSummaryScan = false;
+    setTimeout(() => { runDavidSummaryScan().catch(() => {}); }, 250);
+  }
+}
+
 function queueSummaryScan() {
   runSummaryScan().catch((error) => {
     state.summary.isRunning = false;
     state.summary.lastError = error.message;
+  });
+}
+
+function queueDavidSummaryScan() {
+  runDavidSummaryScan().catch((error) => {
+    state.davidSummary.isRunning = false;
+    state.davidSummary.lastError = error.message;
   });
 }
 
@@ -502,7 +593,9 @@ app.get("/api/health", async (_request, response) => {
     ok: true,
     configured: Boolean(process.env.NOTLETTERS_API_TOKEN),
     mailboxCount: state.mailboxes.length,
+    davidMailboxCount: state.davidMailboxes.length,
     summary: state.summary,
+    davidSummary: state.davidSummary,
     me: state.me,
     meError: state.meError,
   });
@@ -516,6 +609,203 @@ app.get("/api/me", async (_request, response) => {
 app.get("/api/accounts", (_request, response) => {
   const accounts = state.mailboxes.map(serializeMailbox);
   response.json({ accounts, summary: state.summary });
+});
+
+function recordVisitorMailboxAccess(req, mailboxEmail, activityPath) {
+  const ip = getClientIp(req);
+  const visitor = persistedData.visitors[ip];
+  if (!visitor) return;
+  const now = new Date().toISOString();
+  if (!visitor.mailboxesAccessed[mailboxEmail]) {
+    visitor.mailboxesAccessed[mailboxEmail] = {
+      accessCount: 0,
+      firstAccessed: now,
+      lastAccessed: now,
+      messagesSeen: 0,
+      subjects: [],
+    };
+  }
+  const mb = visitor.mailboxesAccessed[mailboxEmail];
+  mb.accessCount++;
+  mb.lastAccessed = now;
+  const activity = { time: now, path: activityPath || req.path, mailbox: mailboxEmail };
+  visitor.recentActivity.unshift(activity);
+  if (visitor.recentActivity.length > MAX_ACTIVITY_LOG) {
+    visitor.recentActivity.length = MAX_ACTIVITY_LOG;
+  }
+}
+
+/** One round-trip for cold starts: account list + initial mailbox messages (matches client random-pick UX). */
+app.get("/api/bootstrap", async (request, response) => {
+  const refresh = request.query.refresh === "1";
+  const lastMailbox = String(request.query.lastMailbox || "").trim();
+
+  const accounts = state.mailboxes.map(serializeMailbox);
+  const payload = {
+    accounts,
+    summary: state.summary,
+    selectedMailbox: null,
+    mailbox: null,
+    messages: [],
+  };
+
+  if (state.mailboxes.length === 0) {
+    response.json(payload);
+    return;
+  }
+
+  const others = lastMailbox
+    ? state.mailboxes.filter((m) => m.email !== lastMailbox)
+    : state.mailboxes;
+  const pool = others.length > 0 ? others : state.mailboxes;
+  const account = pool[Math.floor(Math.random() * pool.length)];
+  payload.selectedMailbox = account.email;
+
+  try {
+    if (refresh || getCache(account.email).status === "pending") {
+      await fetchMailboxMessages(account);
+    }
+
+    recordVisitorMailboxAccess(request, account.email, "/api/bootstrap");
+    const visitor = persistedData.visitors[getClientIp(request)];
+    if (visitor?.mailboxesAccessed[account.email]) {
+      const cache = getCache(account.email);
+      const mb = visitor.mailboxesAccessed[account.email];
+      mb.messagesSeen = cache.messages.length;
+      if (cache.latestSubject) {
+        const subjects = mb.subjects || [];
+        if (!subjects.includes(cache.latestSubject)) {
+          subjects.unshift(cache.latestSubject);
+          if (subjects.length > 10) subjects.length = 10;
+        }
+        mb.subjects = subjects;
+      }
+    }
+
+    payload.mailbox = serializeMailbox(account);
+    payload.messages = getCache(account.email).messages;
+    response.json(payload);
+  } catch (error) {
+    response.status(error.statusCode || 500).json({
+      error: error.message,
+      ...payload,
+      mailbox: serializeMailbox(account),
+      messages: getCache(account.email).messages,
+    });
+  }
+});
+
+app.get("/api/da/accounts", (_request, response) => {
+  const accounts = state.davidMailboxes.map(serializeMailbox);
+  response.json({ accounts, summary: state.davidSummary });
+});
+
+app.get("/api/da/bootstrap", async (request, response) => {
+  const refresh = request.query.refresh === "1";
+  const lastMailbox = String(request.query.lastMailbox || "").trim();
+
+  const accounts = state.davidMailboxes.map(serializeMailbox);
+  const payload = {
+    accounts,
+    summary: state.davidSummary,
+    selectedMailbox: null,
+    mailbox: null,
+    messages: [],
+  };
+
+  if (state.davidMailboxes.length === 0) {
+    response.json(payload);
+    return;
+  }
+
+  const others = lastMailbox
+    ? state.davidMailboxes.filter((m) => m.email !== lastMailbox)
+    : state.davidMailboxes;
+  const pool = others.length > 0 ? others : state.davidMailboxes;
+  const account = pool[Math.floor(Math.random() * pool.length)];
+  payload.selectedMailbox = account.email;
+
+  try {
+    if (refresh || getCache(account.email).status === "pending") {
+      await fetchMailboxMessages(account);
+    }
+
+    recordVisitorMailboxAccess(request, account.email, "/api/da/bootstrap");
+    const visitor = persistedData.visitors[getClientIp(request)];
+    if (visitor?.mailboxesAccessed[account.email]) {
+      const cache = getCache(account.email);
+      const mb = visitor.mailboxesAccessed[account.email];
+      mb.messagesSeen = cache.messages.length;
+      if (cache.latestSubject) {
+        const subjects = mb.subjects || [];
+        if (!subjects.includes(cache.latestSubject)) {
+          subjects.unshift(cache.latestSubject);
+          if (subjects.length > 10) subjects.length = 10;
+        }
+        mb.subjects = subjects;
+      }
+    }
+
+    payload.mailbox = serializeMailbox(account);
+    payload.messages = getCache(account.email).messages;
+    response.json(payload);
+  } catch (error) {
+    response.status(error.statusCode || 500).json({
+      error: error.message,
+      ...payload,
+      mailbox: serializeMailbox(account),
+      messages: getCache(account.email).messages,
+    });
+  }
+});
+
+app.post("/api/da/scan", (_request, response) => {
+  queueDavidSummaryScan();
+  response.json({ started: true, summary: state.davidSummary });
+});
+
+app.get("/api/da/messages", async (request, response) => {
+  const mailboxEmail = String(request.query.mailbox || "");
+  const refresh = request.query.refresh === "1";
+  const account = getDavidMailbox(mailboxEmail);
+
+  if (!account) {
+    response.status(404).json({ error: "Mailbox not found." });
+    return;
+  }
+
+  try {
+    if (refresh || getCache(account.email).status === "pending") {
+      await fetchMailboxMessages(account);
+    }
+
+    const ip = getClientIp(request);
+    const visitor = persistedData.visitors[ip];
+    if (visitor && visitor.mailboxesAccessed[mailboxEmail]) {
+      const cache = getCache(account.email);
+      const mb = visitor.mailboxesAccessed[mailboxEmail];
+      mb.messagesSeen = cache.messages.length;
+      if (cache.latestSubject) {
+        const subjects = mb.subjects || [];
+        if (!subjects.includes(cache.latestSubject)) {
+          subjects.unshift(cache.latestSubject);
+          if (subjects.length > 10) subjects.length = 10;
+        }
+        mb.subjects = subjects;
+      }
+    }
+
+    response.json({
+      mailbox: serializeMailbox(account),
+      messages: getCache(account.email).messages,
+    });
+  } catch (error) {
+    response.status(error.statusCode || 500).json({
+      error: error.message,
+      mailbox: serializeMailbox(account),
+      messages: getCache(account.email).messages,
+    });
+  }
 });
 
 app.post("/api/scan", (_request, response) => {
@@ -775,6 +1065,7 @@ app.post("/admin/api/scan", requireAdmin, (_req, res) => {
 module.exports = app;
 module.exports.init = async function () {
   try { await loadData(); } catch {}
+  try { await loadDavidMailboxes(); } catch (e) { console.error("loadDavidMailboxes:", e.message); }
   try { await loadMailboxes(); } catch (e) { console.error("loadMailboxes:", e.message); }
   try { await fetchMe(); } catch {}
 };
@@ -792,17 +1083,32 @@ if (require.main === module) {
     }
   });
 
+  if (fs.existsSync(DAVID_MAILBOX_FILE)) {
+    fs.watchFile(DAVID_MAILBOX_FILE, { interval: 3000 }, async (current, previous) => {
+      if (current.mtimeMs === previous.mtimeMs) return;
+      try {
+        await loadDavidMailboxes();
+        await loadMailboxes();
+        queueDavidSummaryScan();
+      } catch (error) {
+        state.davidSummary.lastError = `David mailbox reload failed: ${error.message}`;
+      }
+    });
+  }
+
   async function start() {
     await loadData();
+    await loadDavidMailboxes();
     await loadMailboxes();
     await fetchMe();
     queueSummaryScan();
+    queueDavidSummaryScan();
 
     summaryTimer = setInterval(() => { queueSummaryScan(); }, SUMMARY_SCAN_INTERVAL_MS);
     setInterval(() => { saveData().catch(() => {}); }, DATA_SAVE_INTERVAL_MS);
 
     app.listen(PORT, () => {
-      console.log(`האימיילים של דוד המלך is live at http://localhost:${PORT}`);
+      console.log(`האימיילים של דוד is live at http://localhost:${PORT}`);
       console.log(`Admin panel: http://localhost:${PORT}/admin.html`);
     });
   }
@@ -815,6 +1121,7 @@ if (require.main === module) {
   process.on("SIGINT", async () => {
     if (summaryTimer) clearInterval(summaryTimer);
     fs.unwatchFile(MAILBOX_FILE);
+    if (fs.existsSync(DAVID_MAILBOX_FILE)) fs.unwatchFile(DAVID_MAILBOX_FILE);
     await saveData();
     process.exit(0);
   });

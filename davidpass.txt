@@ -1,0 +1,4 @@
+# David-exclusive mailboxes (max 100 lines). Lines starting with # are ignored.
+# These addresses are NOT listed on the main site; they only appear at /da.
+# If the same address exists in emailpass.txt, it is removed from the main list.
+# Paste your email:password list below (one per line).

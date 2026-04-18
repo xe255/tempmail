@@ -52,7 +52,7 @@
 }
 
 /* === DARK MODE === */
-body.dark {
+html.dark {
     --bg:           #141414;
     --bg2:          #0d0d0d;
     --surface:      #1e1e1e;
@@ -125,7 +125,7 @@ body {
     transition: opacity 0.25s ease;
 }
 
-body.dark .scanlines { opacity: 1; }
+html.dark .scanlines { opacity: 1; }
 
 /* === HEADER === */
 .site-header {
@@ -188,6 +188,22 @@ body.dark .scanlines { opacity: 1; }
     gap: 8px;
 }
 
+.david-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--radius);
+    background: var(--amber-dim);
+    border: 1px solid var(--amber-border);
+    color: var(--amber-bright);
+}
+
+html.dark .david-badge {
+    background: rgba(192, 120, 8, 0.14);
+}
+
 .header-right {
     display: flex;
     align-items: center;
@@ -208,7 +224,7 @@ body.dark .scanlines { opacity: 1; }
     border-radius: var(--radius);
 }
 
-body.dark .status-pill {
+html.dark .status-pill {
     background: rgba(46, 204, 113, 0.08);
     border-color: rgba(46, 204, 113, 0.2);
 }
@@ -278,8 +294,8 @@ body.dark .status-pill {
 
 .theme-toggle .icon-sun,
 .theme-toggle .icon-moon { display: none; }
-body:not(.dark) .theme-toggle .icon-moon { display: block; }
-body.dark       .theme-toggle .icon-sun  { display: block; }
+html:not(.dark) .theme-toggle .icon-moon { display: block; }
+html.dark       .theme-toggle .icon-sun  { display: block; }
 
 /* === SOUND TOGGLE === */
 .icon-btn.is-active {

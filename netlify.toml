@@ -3,12 +3,20 @@
   functions = "netlify/functions"
 
 [functions]
-  included_files = ["emailpass.txt"]
+  included_files = ["emailpass.txt", "davidpass.txt"]
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api"
+  from = "/da"
+  to = "/index.html"
   status = 200
+  force = true
+
+# :splat is required so Express sees the full path (e.g. /api/da/bootstrap), not only /api
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/admin/login"
