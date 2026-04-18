@@ -400,7 +400,8 @@ async function loadDavidMailboxes() {
 
 async function loadMailboxes() {
   const allMain = await readMailboxEntries(MAILBOX_FILE, { cap: Infinity, optional: false });
-  const mailboxes = allMain.filter((m) => !state.davidMailboxMap.has(m.email));
+  /** Public site uses the full emailpass list. /da uses davidpass only. To hide an address from /, remove it from emailpass (keep it only in davidpass). */
+  const mailboxes = allMain;
   const mailboxMap = new Map(mailboxes.map((mailbox) => [mailbox.email, mailbox]));
   const nextCache = new Map();
 

@@ -1,3 +1,7 @@
+# David pool for /da only (max 100 non-comment lines). email:password per line.
+# Main site (/) reads emailpass.txt only. For an address that must NOT appear on /,
+# keep it only here — do not duplicate it in emailpass.txt.
+
 zilar_6924@tobagonianmail.com:DMkC)14n@BB0
 smedley273599@tobagonianmail.com:aSXJMgt5LjIW
 teikimoeatua689699@tobagonianmail.com:FK5aSXkWCBYE
