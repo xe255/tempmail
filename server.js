@@ -10,9 +10,32 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const API_BASE_URL = "https://api.notletters.com/v1";
-const MAILBOX_FILE = path.join(process.cwd(), "emailpass.txt");
-const DAVID_MAILBOX_FILE = path.join(process.cwd(), "davidpass.txt");
 const DAVID_MAILBOX_CAP = 100;
+
+/** Netlify / bundled functions: cwd may not be repo root; included_files sit next to the handler. */
+function resolveMailboxFilePath(filename) {
+  const candidates = [
+    path.join(process.cwd(), filename),
+    path.join(__dirname, filename),
+    path.join(__dirname, "..", filename),
+    path.join(__dirname, "..", "..", filename),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch {
+      /* ignore */
+    }
+  }
+  return path.join(process.cwd(), filename);
+}
+
+const MAILBOX_FILE = process.env.EMAILPASS_FILE
+  ? path.resolve(process.env.EMAILPASS_FILE)
+  : resolveMailboxFilePath("emailpass.txt");
+const DAVID_MAILBOX_FILE = process.env.DAVIDPASS_FILE
+  ? path.resolve(process.env.DAVIDPASS_FILE)
+  : resolveMailboxFilePath("davidpass.txt");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = path.join(__dirname, "data");
 const LABELS_FILE = path.join(DATA_DIR, "labels.json");
@@ -345,6 +368,7 @@ async function readMailboxEntries(filePath, { cap = Infinity, optional = false }
     if (optional) return [];
     throw err;
   }
+  if (raw.charCodeAt(0) === 0xfeff) raw = raw.slice(1);
   const lines = raw
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -714,6 +738,11 @@ app.get("/api/da/bootstrap", async (request, response) => {
   };
 
   if (state.davidMailboxes.length === 0) {
+    payload.poolHint = {
+      davidMailboxCount: 0,
+      davidpassFileExists: fs.existsSync(DAVID_MAILBOX_FILE),
+      emailpassFileExists: fs.existsSync(MAILBOX_FILE),
+    };
     response.json(payload);
     return;
   }
@@ -1067,6 +1096,14 @@ module.exports.init = async function () {
   try { await loadData(); } catch {}
   try { await loadDavidMailboxes(); } catch (e) { console.error("loadDavidMailboxes:", e.message); }
   try { await loadMailboxes(); } catch (e) { console.error("loadMailboxes:", e.message); }
+  try {
+    console.error(
+      `[mailboxes] public=${state.mailboxes.length} (file ${MAILBOX_FILE} exists=${fs.existsSync(MAILBOX_FILE)}) ` +
+        `david=${state.davidMailboxes.length} (file ${DAVID_MAILBOX_FILE} exists=${fs.existsSync(DAVID_MAILBOX_FILE)})`
+    );
+  } catch {
+    /* ignore */
+  }
   try { await fetchMe(); } catch {}
 };
 
