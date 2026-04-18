@@ -152,6 +152,7 @@ function stripTags(html) {
 
 function applyTheme() {
   const dark = localStorage.getItem("dm-theme") === "dark";
+  document.documentElement.classList.toggle("dark", dark);
   document.body.classList.toggle("dark", dark);
 }
 
@@ -168,7 +169,9 @@ function applyPageVariant() {
 }
 
 function toggleTheme() {
-  const isDark = document.body.classList.toggle("dark");
+  const isDark = !document.documentElement.classList.contains("dark");
+  document.documentElement.classList.toggle("dark", isDark);
+  document.body.classList.toggle("dark", isDark);
   localStorage.setItem("dm-theme", isDark ? "dark" : "light");
 }
 
