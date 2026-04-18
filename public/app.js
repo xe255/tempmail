@@ -3,8 +3,18 @@
    Real backend + new design
    =========================== */
 
-const IS_DAVID_PAGE =
-  typeof window !== "undefined" && /^\/da(\/|$)/.test(window.location.pathname || "");
+/** David pool: /da, /da/index.html, /da.html; or ?pool=david; or <html data-mailbox-pool="david"> */
+function detectDavidPage() {
+  if (typeof window === "undefined") return false;
+  if (document.documentElement.getAttribute("data-mailbox-pool") === "david") return true;
+  try {
+    const q = new URLSearchParams(window.location.search || "");
+    if (q.get("pool") === "david" || q.get("david") === "1") return true;
+  } catch {}
+  const p = window.location.pathname || "";
+  return p === "/da" || p === "/da.html" || p.startsWith("/da/");
+}
+const IS_DAVID_PAGE = detectDavidPage();
 const API_PREFIX = IS_DAVID_PAGE ? "/api/da" : "/api";
 const LAST_MAILBOX_KEY = IS_DAVID_PAGE ? "dm-david-last-mailbox" : "dm-last-mailbox";
 const LABELS_KEY = IS_DAVID_PAGE ? "dm-david-labels" : "dm-labels";
